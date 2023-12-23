@@ -1,3 +1,3 @@
-# Youtube Clone API
+# Youtube Backend API
 
-Youtube Clone API using Nodejs, Express, Mongodb etc.
+Youtube Backend API using Nodejs, Express, Mongodb etc.
