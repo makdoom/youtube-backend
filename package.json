@@ -1,0 +1,18 @@
+{
+  "name": "backend-development",
+  "version": "1.0.0",
+  "description": "Youtube Clone APIs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "nodejs",
+    "mongodb",
+    "mongoose",
+    "express"
+  ],
+  "author": "Makdoom Shaikh",
+  "license": "ISC"
+}
