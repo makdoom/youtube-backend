@@ -1,10 +1,11 @@
-
 // Method 1: Using Promises
 const asyncHandler = (requestHandler) => {
-  (req, res, next) => {
-    Promise.resolve(requestHandler(req, res, next)).catch(error => next(error))
-  }
-}
+  return (req, res, next) => {
+    Promise.resolve(requestHandler(req, res, next)).catch((error) =>
+      next(error)
+    );
+  };
+};
 
 // Method 2: Using try-catch
 // const asyncHandler = (requestHandler) => (req, res, next) => {
@@ -18,4 +19,4 @@ const asyncHandler = (requestHandler) => {
 //   }
 // }
 
-export {asyncHandler}
+export { asyncHandler };
