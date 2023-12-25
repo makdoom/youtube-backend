@@ -1,8 +1,9 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/apiError.js";
+import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { validateEmail } from "../utils/index.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { username, fullName, email, password } = req.body;
@@ -15,6 +16,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   //TODO: Need to perform email validation
+  if (!validateEmail(email)) throw new ApiError(400, "Email is invalid");
 
   const userExists = await User.findOne({
     $or: [{ username }, { email }],
@@ -31,7 +33,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const avatar = await uploadOnCloudinary(avatarLocalPath);
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
-  const user = User.create({
+  const user = await User.create({
     fullName,
     username: username.toLowerCase(),
     email,
@@ -40,7 +42,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
   });
 
-  const createdUser = await User.findById({ id: user._id }).select(
+  const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
   if (!createdUser)
