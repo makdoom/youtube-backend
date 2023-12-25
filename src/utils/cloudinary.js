@@ -19,6 +19,9 @@ const uploadOnCloudinary = async (localFilePath) => {
         `File has been uploaded successfully on ⛅️ \nFile URL: ${uploadedFile.url}`
       );
     }
+
+    // Unlink local files
+    fs.unlinkSync(localFilePath);
     return uploadedFile;
   } catch (error) {
     // Remove file from local as the uploading got failed
