@@ -1,3 +1,5 @@
+import jwt from "jsonwebtoken";
+
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
@@ -71,7 +73,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
-  if (!username && !email)
+  if (!(username || email))
     throw new ApiError(400, "Username or Email is required");
 
   const existedUser = await User.findOne({
@@ -129,4 +131,45 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
-export { registerUser, loginUser, logoutUser };
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  try {
+    const incommingRefreshToken =
+      req.cookies.refreshToken || req.body.refreshToken;
+
+    console.log("incommingRefreshToken", incommingRefreshToken);
+    if (!incommingRefreshToken) throw new ApiError(401, "Unauthorized request");
+
+    const decodedToken = jwt.verify(
+      incommingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+
+    const user = await User.findById(decodedToken?._id);
+    if (!user) throw new ApiError(400, "Invalid refresh token");
+
+    console.log(incommingRefreshToken);
+    console.log(user);
+    if (incommingRefreshToken !== user?.refreshToken)
+      throw new ApiError(400, "Refresh token expired or used");
+
+    const cookieOptions = { httpOnly: true, secure: true };
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+      user?._id
+    );
+
+    res
+      .status(200)
+      .cookie("accessToken", accessToken, cookieOptions)
+      .cookie("refreshToken", refreshToken, cookieOptions)
+      .json(
+        new ApiResponse(
+          200,
+          { accessToken, refreshToken },
+          "Access token refreshed"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(401, error?.message || "Invalid refresh token");
+  }
+});
+export { registerUser, loginUser, logoutUser, refreshAccessToken };

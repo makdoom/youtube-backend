@@ -2,9 +2,6 @@
 const asyncHandler = (requestHandler) => {
   return (req, res, next) => {
     Promise.resolve(requestHandler(req, res, next)).catch((error) => {
-      // console.log(error);
-      // throw new ApiError(500, hello);
-      // res.json(new ApiError(500, "hello"));
       next(error);
     });
   };
