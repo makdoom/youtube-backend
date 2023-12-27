@@ -216,6 +216,42 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Account details updated successfully"));
 });
 
+const updateUserAvatar = asyncHandler(async (req) => {
+  const avatarLocalFilePath = req.file?.path;
+  if (!avatarLocalFilePath) throw new ApiError(400, "Avatar file is missing");
+
+  const avatar = await uploadOnCloudinary(avatarLocalFilePath);
+  if (!avatar) throw new ApiError(400, "Error while uploading avatar");
+
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        avatar: avatar?.url,
+      },
+    },
+    { new: true }
+  ).select("-password");
+});
+
+const updateCoverImage = asyncHandler(async (req) => {
+  const coverLocalImagePath = req.file?.path;
+  if (!coverLocalImagePath)
+    throw new ApiError(400, "Cover image file is missing");
+
+  const coverImage = await uploadOnCloudinary(coverLocalImagePath);
+  if (!coverImage) throw new ApiError(400, "Error while uploading cover image");
+
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        coverImage: coverImage?.url,
+      },
+    },
+    { new: true }
+  ).select("-password");
+});
 export {
   registerUser,
   loginUser,
@@ -224,4 +260,6 @@ export {
   changeUserPassword,
   getCurrentUser,
   updateAccountDetails,
+  updateUserAvatar,
+  updateCoverImage,
 };
