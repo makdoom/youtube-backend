@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import { ApiError } from "./ApiError";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -30,4 +31,18 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
-export { uploadOnCloudinary };
+const deleteOnCloudinary = async (filePublicId) => {
+  try {
+    if (!filePublicId) return null;
+
+    const uploadedFile = await cloudinary.uploader.destroy(filePublicId, {
+      resource_type: "auto",
+    });
+
+    return uploadedFile;
+  } catch (error) {
+    throw new ApiError(500, "Error while removing old avatar file");
+  }
+};
+
+export { uploadOnCloudinary, deleteOnCloudinary };
