@@ -3,6 +3,8 @@ import { Router } from "express";
 import {
   changeUserPassword,
   getCurrentUser,
+  getUserProfileChannel,
+  getUserWatchHistory,
   loginUser,
   logoutUser,
   refreshAccessToken,
@@ -28,10 +30,16 @@ router.route("/login").post(loginUser);
 
 // Secured routes
 router.route("/getme").get(verifyJWT, getCurrentUser);
-router.route("/update-details").post(verifyJWT, updateAccountDetails);
+router.route("/update-details").patch(verifyJWT, updateAccountDetails);
 router.route("/change-password").post(verifyJWT, changeUserPassword);
-router.route("/update-avatar").post(verifyJWT, updateUserAvatar);
-router.route("/update-cover-image").post(verifyJWT, updateCoverImage);
+router
+  .route("/update-avatar")
+  .post(verifyJWT, upload.single("avatar"), updateUserAvatar);
+router
+  .route("/update-cover-image")
+  .post(verifyJWT, upload.single("coverImage"), updateCoverImage);
+router.route("/channel/:username").get(verifyJWT, getUserProfileChannel);
+router.route("/watch-history").get(verifyJWT, getUserWatchHistory);
 router.route("/refresh-token").post(refreshAccessToken);
 
 router.route("/logout").post(verifyJWT, logoutUser);
