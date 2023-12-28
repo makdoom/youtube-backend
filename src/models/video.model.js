@@ -42,4 +42,4 @@ const videoSchema = new Schema(
 // Aggregation Pipeline
 videoSchema.plugin(mongooseAggregatePaginate);
 
-export const Video = mongoose.model("User", videoSchema);
+export const Video = mongoose.model("Video", videoSchema);
