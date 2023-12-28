@@ -216,7 +216,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Account details updated successfully"));
 });
 
-const updateUserAvatar = asyncHandler(async (req) => {
+const updateUserAvatar = asyncHandler(async (req, res) => {
   const avatarLocalFilePath = req.file?.path;
   if (!avatarLocalFilePath) throw new ApiError(400, "Avatar file is missing");
 
@@ -249,7 +249,7 @@ const updateUserAvatar = asyncHandler(async (req) => {
     );
 });
 
-const updateCoverImage = asyncHandler(async (req) => {
+const updateCoverImage = asyncHandler(async (req, res) => {
   const coverLocalImagePath = req.file?.path;
   if (!coverLocalImagePath)
     throw new ApiError(400, "Cover image file is missing");
@@ -282,6 +282,63 @@ const updateCoverImage = asyncHandler(async (req) => {
       new ApiResponse(200, updatedUser, "User cover image updated successfully")
     );
 });
+
+const getUserProfileChannel = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+  if (!username?.trim()) throw new ApiError(400, "Username is missing");
+
+  const channel = await User.aggregate([
+    {
+      $match: { username: username.toLowerCase() },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo",
+      },
+    },
+    {
+      $addFields: {
+        subscriberCount: {
+          $size: "$subscribers",
+        },
+        channelSubscribedToCount: {
+          $size: "$subscribedTo",
+        },
+        isSubscribed: {
+          $cond: {
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        fullName: 1,
+        username: 1,
+        avatar: 1,
+        coverImage: 1,
+        isSubscribed: 1,
+        subscriberCount: 1,
+        channelSubscribedToCount: 1,
+        email: 1,
+      },
+    },
+  ]);
+});
+
 export {
   registerUser,
   loginUser,
